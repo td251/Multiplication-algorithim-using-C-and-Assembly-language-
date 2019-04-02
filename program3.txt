@@ -1,0 +1,104 @@
+//Serial.print("Input BR in range to -32768 : 32767 ");
+static boolean loopCont = true;
+int userInput;
+static char charArray[22]; //for strings max length 21 
+int finalValue;
+int BR;
+int AD;
+int BinaryHolder[32];
+int count;
+String sixteenHolder = " ";
+byte N;
+// hold = hold + bits{i} 
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  Serial.print("Enter BR in range -32768 to 32767: "); //first BR 
+  while (Serial.available() == 0) {}// wait for button to be pressed
+  if (Serial.available() > 0) { //if button is pressed 
+    BR = readInt();//retriving users input 
+    Serial.print(BR);//printing out users valu e
+    Serial.println(); 
+    Serial.print("Enter AD in range -32768 to 32767:  "); //AD value 
+    while (Serial.available() == 0) {}//wait for button to be pressed 
+    if (Serial.available() > 0) {//if button is pressed 
+      AD = readInt();//retrieving user inout 
+      Serial.print(AD);//printing user inout 
+    }
+    Serial.println();
+    Serial.print("Enter N:   "); // N 
+    while (Serial.available() == 0) {}//wait for button ot be pressed
+    if (Serial.available() > 0) {//if button is pressed
+      N = readInt(); // N value 
+      Serial.print(N);
+      Serial.println(); 
+      trace(BR, AD, N); //Pass the values through trace function
+    }
+
+  }
+
+}
+
+int readInt(void) {
+  static char charArray[22];
+  if (!Serial.available()) return 0; // if no characters are entered rtn null
+  delay(70); // wait for the characters to arrive  
+  memset(charArray, 0, sizeof(charArray)); //clearing charArray
+  byte pos = 0; //position in char array 
+  while (Serial.available()) //whilst any key is pressed 
+  {
+    char i = Serial.read();
+    if (i >= 32 && pos < sizeof(charArray) - 1) //-1 as the string is null terminated 
+    {
+      charArray[pos] = i;//going through this position of char array 
+      pos++;//increment position 
+    }
+  }
+  charArray[pos] = '\0'; //making it a null terminated string 
+  finalValue = atoi(charArray);//converting char array to an int 
+  return finalValue;// return int value 
+}
+String decimalToBinary(int num) {
+  String holder = " "; //Empty string to hold binary value 
+  delay(70); // wait for the characters to arrive  
+  memset(BinaryHolder, 0, sizeof(BinaryHolder));
+  count = 0;
+  int zeros = String(num,BIN).length(); 
+  for (int i=0; i< 16 - zeros; i++) { //16 bit - bits the string already consist of 
+    holder = holder + "0"; //adding needed amount of 0s to make it 16 bit 
+  }
+  holder= holder + String(num,BIN); //converting to binary equalivelent 
+  return holder;
+}
+
+void trace(word BR, word AD, byte n) {
+  int bits = 16;//for splitting up the 16 bits 
+  String BR1 = " "; // sets it to a empty string 
+  String BR2 = " ";
+  String AD1 = " ";
+  String AD2 = " "; 
+  String BRLong = decimalToBinary( BR); //passing through decimal2bin function 
+  //delay?
+  // String ADL = decimalToBinary("bin=", bytes, AD); 
+  String ADLong = decimalToBinary( AD);  //bytes is a length of 16 
+  for (int i = 0; i <= bits; i++) {
+    if (i <= bits / 2) {// ensuring consists of eight bits at maximum 
+      BR1 = BR1 + BRLong[i];//first B value 
+      AD1 = AD1 + ADLong[i];// A value
+    } else if (i >= bits / 2) {//ensuring consists of eight bits at maximum 
+      BR2 = BR2 + BRLong[i];// R value 
+      AD2 = AD2 + ADLong[i]; // D value 
+    }
+  }
+  Serial.println(); 
+//  Serial.print("n= " + N);  //printing values 
+  Serial.print(" D="+ AD2); 
+  Serial.print(" B=" + BR1); 
+  Serial.print(" A=" + AD1); 
+  Serial.print(" R=" + BR2); 
+  Serial.println(); 
+}

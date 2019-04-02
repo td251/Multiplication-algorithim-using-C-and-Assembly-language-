@@ -1,0 +1,44 @@
+static boolean loopCont=true;
+ int userInput;
+static char charArray[22];//for strings max length 21 
+int finalValue;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); 
+  }
+void loop(){
+  if (loopCont)
+  {
+    Serial.print("Please input an interger: ");
+    loopCont=false;
+  }
+  userInput= readInt();
+  if (userInput!=0)
+  {
+    Serial.print(userInput);
+    Serial.println(); 
+    loopCont=true;
+  }
+  
+}
+int readInt(void)
+{   
+  static char charArray[22];
+  if(!Serial.available()) return 0; // if no characters are entered rtn null
+  delay(70); // wait for the characters to arrive  
+  memset(charArray,0,sizeof(charArray)); //clearing charArray
+  byte pos = 0;  //position in char array 
+  while(Serial.available()) //whilst any key is pressed 
+  {
+    char i = Serial.read(); 
+    if(i >= 32 && pos<sizeof(charArray) - 1) //-1 as the string is null terminated 
+    {
+      charArray[pos]=i; 
+      pos++; 
+    }
+}
+charArray[pos] = '\0'; //making it a null terminated string 
+finalValue = atoi(charArray);  
+return finalValue; 
+}

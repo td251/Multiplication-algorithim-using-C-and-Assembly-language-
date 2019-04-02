@@ -1,0 +1,68 @@
+static boolean loopCont=true;
+
+int binaryNum[8]; 
+static char binaryChars[8]; 
+String c = " "; 
+static char charArray[22]; //for strings max length 21 
+int finalValue; 
+String emptyString = " "; 
+String binaryEquavilent; 
+int count; 
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  }
+void loop(){
+  
+  if (loopCont)
+  {
+    
+    Serial.print("Please input an interger: ");
+    loopCont= false;
+  }
+  while(Serial.available() ) 
+  {
+    binaryEquavilent = decimalToBinary(emptyString,finalValue) ;
+    Serial.println(); 
+    loopCont = true; 
+
+  }
+  
+}
+String decimalToBinary(String message,byte n)
+{
+   
+  delay(70); // wait for the characters to arrive  
+  memset(binaryNum,0,sizeof(binaryNum));
+  memset(charArray,0,sizeof(charArray)); //clearing charArray
+  byte pos = 0;  //position in char array 
+  while(Serial.available()) //whilst any key is pressed 
+  {
+    char i = Serial.read(); 
+    if(i >= 32 && pos<sizeof(charArray) - 1) //-1 as the string is null terminated 
+    {
+      charArray[pos]=i; 
+      pos++; 
+    }
+}
+charArray[pos] = '\0'; //making it a null terminated string 
+finalValue = atoi(charArray); 
+Serial.print(finalValue);
+// array to store binary number 
+
+  
+    // counter for binary array 
+    count = 0; 
+    while (finalValue > 0) { 
+  
+        // storing remainder in binary array 
+        binaryNum[count] = finalValue % 2; 
+        finalValue = finalValue / 2; 
+        count++; 
+    }
+     //clearing charArray
+    Serial.println();
+for(int j =7; j> -1; j--) { // 8 to - 1 reverse string 
+ Serial.print(binaryNum[j]);
+}
+}

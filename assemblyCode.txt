@@ -1,0 +1,241 @@
+/// Function prototypes (signatures)
+static boolean loopCont = true;
+int userInput;
+static char charArray[22]; //for string max length is 21
+int finalValue;
+String bin = "bin= ";
+int BR;
+int AD;
+int BinaryHolder[32];
+String binaryEquivalent;
+int count;
+String sixteenHolder = " ";
+byte N;
+int multiplicand;
+int multiplier;
+int bits = 16;//for splitting up the 16 bits
+int binaryNum[8]; // array to store binary number
+int binA;  //A
+int binB; //B
+int n; // nRegister
+
+
+void setup()
+{
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  Serial.print("Enter multiplicand  :");
+  while (Serial.available() == 0) {}
+  if (Serial.available() > 0) {
+    multiplicand = readInt(); //retrieving multiplicand
+    Serial.print(multiplicand);
+    if (multiplicand >= -128 && multiplicand <= 127)
+    {
+      binaryEquivalent = decimalToBinary(multiplicand);
+    } else {
+      Serial.print("    value has to be inbetween values of -128 to 127");
+    }
+  }
+  Serial.println();
+  Serial.print("Enter multiplier    :");
+  while (Serial.available() == 0) {}
+  if (Serial.available() > 0 ) {
+    multiplier = readInt();
+    Serial.print(multiplier);
+    if (multiplier >= -128 && multiplier <= 127)
+    {
+      binaryEquivalent = decimalToBinary(multiplier);
+      Serial.println();
+    }
+    else {
+      Serial.print("    value has to be inbetween values of -128 to 127");
+      Serial.println();
+    }
+  }
+}
+int readInt(void) {
+  static char charArray[22];
+  if (!Serial.available()) return 0; // if no characters are entered rtn null
+  delay(70); // wait for the characters to arrive
+  memset(charArray, 0, sizeof(charArray)); //clearing charArray
+  byte pos = 0; //position in char array
+  while (Serial.available()) //whilst any key is pressed
+  {
+    char i = Serial.read();
+    if (i >= 32 && pos < sizeof(charArray) - 1) //-1 as the string is null terminated
+    {
+      charArray[pos] = i;//going through this position of char array
+      pos++;//increment position
+    }
+  }
+  charArray[pos] = '\0'; //making it a null terminated string
+  finalValue = atoi(charArray);//converting char array to an int
+  return finalValue;// return int value
+}
+String decimalToBinary(byte num) {
+  String displayBin1 = " ";
+  String holder = " "; //Empty string to hold binary value
+  delay(70); // wait for the characters to arrive
+  memset(BinaryHolder, 0, sizeof(BinaryHolder));
+  count = 0;
+  int zeros = String(num, BIN).length();
+  for (int i = 0; i < 16 - zeros; i++) { //16 bit - bits the string already consist of
+    holder = holder + "0"; //adding needed amount of 0s to make it 16 bit
+  }
+  holder = holder + String(num, BIN); //converting to binary equalivelent
+  for (int i = 0; i <= 16; i++) {
+    if (i > 16 / 2) {
+      displayBin1 = displayBin1 + holder[i];
+    }
+  }
+  Serial.print(displayBin1);
+  return holder;
+}
+extern void trace(word BR, word AD, byte n) { // (from program 3) dump the register contents for trace purposes
+  asm ("trace");
+  String BR1 = " "; // sets it to a empty string
+  String BR2 = " ";
+  String AD1 = " ";
+  String AD2 = " ";
+  //  String BRlong  = dec2bn(bin, byte, byte);
+  //for(int i = 0;
+  String BRLong = decimalToBinary(BR); //passing through decimal2bin function
+  //delay?
+  String ADLong = decimalToBinary(AD);
+  //bytes is a length of 16
+  for (int i = 0; i <= bits; i++) {
+    if (i <= bits / 2) {// ensuring consists of eight bits at maximum
+      BR1 = BR1 + BRLong[i];//first B value
+      AD1 = AD1 + ADLong[i];// A value
+    } else if (i >= bits / 2) {//ensuring consists of eight bits at maximum
+      BR2 = BR2 + BRLong[i];// R value
+      AD2 = AD2 + ADLong[i]; // D value
+    }
+  }
+  Serial.print("n= " + N);  //printing values
+  Serial.print(" D=" + AD2);
+  Serial.print(" B=" + BR1);
+  Serial.print(" A=" + AD1);
+  Serial.print(" R=" + BR2);
+  Serial.println();
+  // asm ("TRACE");
+}
+
+//int signedMult(char multiplier, char multiplicand);           // Assembly language implementation of 4 register multiply alg
+
+
+
+//skeleton template is sused which defines which defines which registers to use
+//where to insert code
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Program 4 - Signed Multiplication using 4 registers with correction factor
+//
+// Input parameters are automatically passed in the following registers:
+//    r24 - multiplier          alias (R)
+//    r22 - multiplicand        alias (D)
+//
+// IMPORTANT - use the following machine registers for your other varialbles:
+//    r25 - Product high byte   alias (B)
+//    r23 - Product low  byte   alias (A)
+//    r20 - Interation counter  alias (n)
+//
+// The contents of registers r25 and r24 are returned from the function
+// You must ensure that you copy the product to these if necessary i.e. B->r25 A->r24
+//
+// to find out more about C function parameter passing, see https://gcc.gnu.org/wiki/avr-gcc#Register_Layout
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int signedMult(char multiplier, char multiplicand)
+{
+
+
+  binA = 0; //A
+  binB = 0;// B
+  n = 8;//the n reg
+  asm volatile(
+    // your assembly code goes here
+    "         lds r20,n             ; r20 = nreg             \n"
+    "         lds r25,binA          ; r25 = B1               \n"
+    "         lds r23,binA          ; R23 = A1               \n"
+    "         loop%=: clc           ; clear the carry flag   \n"
+    "         sbrc r24,0            ; if binA = 0  skip 2 next \n"
+    "         add r25,r22           ; if binA=1 binB = binB +  Y   \n"
+    "         ror r25               ; rotate binA in c         \n"
+    "         ror r23               ; rotate binB right        \n"
+    "         ror r24               ; rotate register through c     \n"
+    "         call dumpRegs         ; Dump to reg            \n"
+    "         dec r20               ; n = n - 1              \n"
+    "         brne loop% =          ; if n!=0 loop           \n"
+    "         sts binB,r25          ;store product high byte \n"
+    "         sts binA,r23          ;store product lo byte   \n"
+    "         sts multiplier, r24   ; store product lo byte \n"
+    :
+    :
+    :"r20", "r23", "r25"
+  );
+}
+
+asm volatile(
+  //wrraper subroutine
+  //-----------------------------------------------------------------------
+  // Wrapper for the C trace function, which saves and restores
+  // registers and flags, so we can basically do anything we want in it ;)
+  //----------------------------------------------------------------------
+  //you can call the subroutine directly from assembly code dumpreg
+  "dumpRegs:   push r20           ; save the loop count n               \n"
+  "            push r22           ; save the multiplicand, Yreg         \n"
+  "            push r23           ; save the loop count, Nreg           \n"
+  "            push r24           ; save the product lo byte Pl         \n"
+  "            push r25           ; save the product hi byte Ph         \n"
+  "            in r16, __SREG__   ; save the status register SREG       \n"
+  "            call trace         ; call the C function trace()         \n"
+  "            out __SREG__, r16  ; restore the status register, SREG   \n"
+  "            pop r25            ; restore working registers....       \n"
+  "            pop r24            ; note that these must be popped off  \n"
+  "            pop r23            ; the stack in reverse order to that  \n"
+  "            pop r22            ; in which they were pushed           \n"
+  "            pop r20            ; in which they were pushed           \n"
+  "            ret                ; return back to multiplication       \n"
+
+  // put your add and shift subroutines here
+);
+
+int shift(void)
+{
+  //A1 = 0; //A
+  //B1 = 0;// B
+  //nreg = 8;//the n reg
+  asm volatile(
+    // your assembly code goes here
+    "shift:  ror r25              ; shift right                       \n"
+    "        call dumpRegs        ;  calling the dumpreg subroutine   \n"              
+  
+
+  );
+}
+int add(void)
+{
+  asm volatile(
+ "start:       mov     c1,16      ; initalize bit count to 16         \n" 
+ "             shr     dx,1       ; move right most bit in carry      \n" 
+ "             call    dumpRegs   ;                                   \n"
+ 
+ 
+ );
+
+  }
+
+    /*components of a sub routine are an entry point
+    * location of the first instruction in the routine
+    * parameters. The list of restigers or memory locations that contain the parameters for the routine
+    * return values
+    * working storage
+    * the registers or mem location required by the routine to peform the task
+    *
+    */
+
